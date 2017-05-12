@@ -50,13 +50,32 @@ end
 
 defmodule Player, do: defstruct [:room, :items]
 
-defmodule Room, do: defstruct [:text, :doors, :name]
+defmodule Room, do: defstruct [:text, :doors, :name, :items]
+
+defmodule Door, do: defstruct [:room, :needs_key]
+
+defmodule Item, do: defstruct [:name, :damage]
 
 defmodule Rooms do
   @rooms [
-    %Room{name: "the parking lot", text: "You are on the parking lot of YoungCapital, the flags are moving in the wind. Looking at the building you see that there are two entrances, an orange door on the left with a big YoungCapital sign above it, and a glass door on right. Which door do you pick?", doors: %{ "A" => "room2", "B" => "room3" }},
-    %Room{name: "room2", text: "you are in room 2", doors: %{ "Y" => "the parking lot" }},
-    %Room{name: "room3", text: "you are in room 3", doors: %{ "X" => "the parking lot" }},
+    %Room{
+      name: "the parking lot",
+      text: "You are on the parking lot of YoungCapital, the flags are moving in the wind. Looking at the building you see that there are two entrances, an orange door on the left with a big YoungCapital sign above it, and a glass door on right. Which door do you pick?",
+      doors: [%Door{name: "A", room: "room2", needs_key: "key1"}, %Door{name: "B", room: "room3"}],
+      items: [%Item{name: "key1", text: "Keyfob", damage: 1}]
+    },
+    %Room{
+      name: "room2",
+      text: "you are in room 2",
+      doors: [%Door{name: "Y", room: "the parking lot"}],
+      items: [],
+    },
+    %Room{
+      name: "room3",
+      text: "you are in room 3",
+      doors: [%Door{name: "X", room: "the parking lot"}]
+      items: [],
+    },
   ]
 
   def rooms, do: @rooms
@@ -86,7 +105,7 @@ defmodule Game do
 
   def process_message("h", state), do: process_message("help", state)
   def process_message("help", state) do
-    {"Possible command are: 'go to', 'open', 'where am i'", state}
+    {"Possible command are: 'go to', 'open', 'where am i'", %{}}
   end
 
   def process_message("where am i", state) do
