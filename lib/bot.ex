@@ -128,7 +128,7 @@ defmodule Rooms do
     },
     %Room{
       name: "glass lobby",
-      text: "You are now in the glass lobby. You see enemy *Jaap*. Do you want to `fight` or `run`?",
+      text: "You are now in the glass lobby. Oh no!, You see enemy *Jaap*. Do you want to `fight` or `run`?",
       doors: [%Door{name: "X", room: "the parking lot"}],
       items: [],
       enemy: "Ruben"
