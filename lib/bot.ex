@@ -82,7 +82,7 @@ defmodule Items do
   def find(item_name), do: @items |> Enum.find(fn(item) -> item.name == item_name end)
 end
 
-defmodule Rooms do
+defmodule Enemies do
   @enemies [
     %Enemy{
       name: "Ruben",
@@ -96,6 +96,14 @@ defmodule Rooms do
     }
   ]
 
+  def enemies, do: @enemies
+
+  def enemy(name) do
+    @enemies |> Enum.find(fn(enemy) -> enemy.name == name end)
+  end
+end
+
+defmodule Rooms do
   @rooms [
     %Room{
       name: "the parking lot",
@@ -105,26 +113,17 @@ defmodule Rooms do
         %Door{name: "orange door", room: "main lobby"}
         ],
       items: ["keyfob"],
-      enemy: ""
     },
     %Room{
       name: "main lobby",
       text: "You are now in the main lobby. You are greeted by the smell of fresh coffee and see the reception desk with a friendly receptionist in front of it. There is a coffee machine to the right. What do you do? `pick up coffee` or `talk to receptionist`",
       doors: [%Door{name: "Y", room: "the parking lot"}],
       items: ["coffee"],
-      enemy: "",
     },
     %Room{
       name: "glass lobby",
       text: "You are now in the glass lobby. You see enemy *Jaap*. Do you want to `fight` or `run`?",
       doors: [%Door{name: "X", room: "the parking lot"}],
-      items: [],
-      enemy: ""
-    },
-    %Room{
-      name: "room4",
-      text: "you are in room 4",
-      doors: [],
       items: [],
       enemy: "Ruben"
     },
@@ -162,6 +161,14 @@ defmodule Game do
     {"Possible command are: 'go to', 'open', 'where am i'", state}
   end
 
+  def process_message("attack", %{enemy: %Enemy{}} = state) do
+    {"You have done no damage", state}
+  end
+
+  def process_message("run", %{enemy: %Enemy{}} = state) do
+    goto_room(Rooms.room("the parking lot"), %Game{state | enemy: nil})
+  end
+
   def process_message("where am i", state) do
     {current_room(state).text, state}
   end
@@ -195,6 +202,10 @@ defmodule Game do
   end
 
   def goto_room(nil, _), do: {"Unknown room", %{}}
+  def goto_room(%Room{enemy: enemy_name} = next_room, state) do
+    enemy = Enemies.enemy(enemy_name)
+    {"You see an enemy in the room, what do you do", %{enemy: enemy}}
+  end
   def goto_room(next_room, state) do
     {next_room.text, %Game{state | player: %Player{state.player | room: next_room.name}}}
   end
