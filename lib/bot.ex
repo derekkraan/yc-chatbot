@@ -54,9 +54,9 @@ defmodule Room, do: defstruct [:text, :doors, :name]
 
 defmodule Rooms do
   @rooms [
-    %Room{name: "room1", text: "you are in room 1", doors: %{ "A" => "room2", "B" => "room3" }},
-    %Room{name: "room2", text: "you are in room 2", doors: %{ "Y" => "room1" }},
-    %Room{name: "room3", text: "you are in room 3", doors: %{ "X" => "room1" }},
+    %Room{name: "the parking lot", text: "You are on the parking lot of YoungCapital, the flags are moving in the wind. Looking at the building you see that there are two entrances, an orange door on the left with a big YoungCapital sign above it, and a glass door on right. Which door do you pick?", doors: %{ "A" => "room2", "B" => "room3" }},
+    %Room{name: "room2", text: "you are in room 2", doors: %{ "Y" => "the parking lot" }},
+    %Room{name: "room3", text: "you are in room 3", doors: %{ "X" => "the parking lot" }},
   ]
 
   def rooms, do: @rooms
@@ -71,7 +71,7 @@ defmodule Game do
 
   def start_link(user_id) do
     name = via_tuple(user_id)
-    GenServer.start_link(__MODULE__, %{player: %Player{room: "room1", items: []}}, name: name)
+    GenServer.start_link(__MODULE__, %{player: %Player{room: "the parking lot", items: []}}, name: name)
   end
 
   defp via_tuple(user_id) do
