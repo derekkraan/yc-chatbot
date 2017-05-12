@@ -249,7 +249,7 @@ defmodule Game do
   def handle_call({:next_message, message}, _from, state) do
     IO.inspect message
     IO.inspect state
-    {message, new_state} = process_message(message.text, state) |> IO.inspect
+    {message, new_state} = process_message(message.text |> String.downcase, state) |> IO.inspect
 
     {:reply, message, new_state}
   end
