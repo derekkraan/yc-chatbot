@@ -48,7 +48,18 @@ defmodule Bot do
   def handle_info(_, _, state), do: {:ok, state}
 end
 
-defmodule Games do
+defmodule Player, do: defstruct [:room, :items]
+
+defmodule Room, do: defstruct [:text, :doors]
+
+defmodule Rooms do
+  @rooms %{
+    "room1" => %Room{text: "you are in room 1", doors: ["room2", "room3"]},
+    "room2" => %Room{text: "you are in room 2", doors: ["room1"]},
+    "room3" => %Room{text: "you are in room 3", doors: ["room1"]},
+  }
+
+  def rooms, do: @rooms
 end
 
 defmodule Game do
@@ -56,7 +67,7 @@ defmodule Game do
 
   def start_link(user_id) do
     name = via_tuple(user_id)
-    GenServer.start_link(__MODULE__, [user_id], name: name)
+    GenServer.start_link(__MODULE__, %{player: %Player{room: :room1, items: []}}, name: name)
   end
 
   defp via_tuple(user_id) do
@@ -67,7 +78,19 @@ defmodule Game do
     GenServer.call(pid, {:next_message, message})
   end
 
+  def process_message("open " <> room, state), do: process_message("go to " <> room, state)
+  def process_message("go to " <> room, state) do
+    {Rooms.rooms[room].text, %{player: %Player{state.player | room: room}}}
+  end
+
+  def process_message(message, player) do
+    {"I'm sorry, I don't understand your query", %{}}
+  end
+
   def handle_call({:next_message, message}, _from, state) do
-    {:reply, "MESSAGE FROM GAME", state}
+    IO.inspect state
+    {message, new_state} = process_message(message.text, state) |> IO.inspect
+
+    {:reply, message, state |> Map.merge(new_state)}
   end
 end
