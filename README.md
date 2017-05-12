@@ -4,16 +4,6 @@
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ycbot` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [{:ycbot, "~> 0.1.0"}]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/ycbot](https://hexdocs.pm/ycbot).
-
+1. Install elixir (`brew install elixir`)
+2. run `mix deps.get`
+3. run `mix compile && mix run --no-halt`
