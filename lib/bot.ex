@@ -53,7 +53,7 @@ defmodule Enemy, do: defstruct [:name, :damage, :health]
 defmodule Player do
   defstruct [:room, :items, :health]
 
-  def has_item?(player, item_name), do: player.items |> Enum.find(fn(item) -> item.name == item_name end)
+  def has_item?(player, item_name), do: player.items |> Enum.member?(item_name)
 end
 
 defmodule Room do
@@ -172,6 +172,7 @@ defmodule Game do
   def process_message("pick up " <> item, state) do
     room = current_room(state)
     if(room |> Room.has_item?(item)) do
+      {"You picked up #{item}", %Game{state | player: %Player{state.player | items: state.player.items ++ [item]}}}
     end
   end
 
