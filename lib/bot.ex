@@ -82,16 +82,21 @@ defmodule Game do
     GenServer.call(pid, {:next_message, message})
   end
 
+  def current_room(state), do: Rooms.room(state.player.room)
+
   def process_message("h", state), do: process_message("help", state)
   def process_message("help", state) do
-    {"Possible command are: 'go to', 'open'", state}
+    {"Possible command are: 'go to', 'open', 'where am i'", state}
+  end
+
+  def process_message("where am i", state) do
+    {current_room(state).text, %{}}
   end
 
   def process_message("open " <> room, state), do: process_message("go to " <> room, state)
   def process_message("go to " <> room, state) do
-    current_room = Rooms.room(state.player.room)
-    if(current_room.doors |> Map.has_key?(room)) do
-      goto_room(Rooms.room(current_room.doors[room]), state)
+    if(current_room(state).doors |> Map.has_key?(room)) do
+      goto_room(Rooms.room(current_room(state).doors[room]), state)
     else
       {"You can't get to there from here", %{}}
     end
