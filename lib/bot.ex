@@ -54,9 +54,9 @@ defmodule Room, do: defstruct [:text, :doors, :name]
 
 defmodule Rooms do
   @rooms [
-    %Room{name: "room1", text: "you are in room 1", doors: ["room2", "room3"]},
-    %Room{name: "room2", text: "you are in room 2", doors: ["room1"]},
-    %Room{name: "room3", text: "you are in room 3", doors: ["room1"]},
+    %Room{name: "room1", text: "you are in room 1", doors: %{ "A" => "room2", "B" => "room3" }},
+    %Room{name: "room2", text: "you are in room 2", doors: %{ "Y" => "room1" }},
+    %Room{name: "room3", text: "you are in room 3", doors: %{ "X" => "room1" }},
   ]
 
   def rooms, do: @rooms
@@ -83,23 +83,26 @@ defmodule Game do
   end
 
   def process_message("open " <> room, state), do: process_message("go to " <> room, state)
-  def process_message("go to " <> room, state), do: goto_room(Rooms.room(room), state)
-
-  def goto_room(nil, _), do: {"Unknown room", %{}}
-  def goto_room(next_room, state) do
+  def process_message("go to " <> room, state) do
     current_room = Rooms.room(state.player.room)
-    if(current_room.doors |> Enum.member?(next_room.name)) do
-      {next_room.text, %{player: %Player{state.player | room: next_room.name}}}
+    if(current_room.doors |> Map.has_key?(room)) do
+      goto_room(Rooms.room(current_room.doors[room]), state)
     else
       {"You can't get to there from here", %{}}
     end
   end
 
-  def process_message(message, player) do
-    {"ENGLISH MOTHERFUCKER, DO YOU SPEAK IT??", %{}}
+  def goto_room(nil, _), do: {"Unknown room", %{}}
+  def goto_room(next_room, state) do
+    {next_room.text, %{player: %Player{state.player | room: next_room.name}}}
+  end
+
+  def process_message(message, state) do
+    {Rooms.room(state.player.room).text, %{}}
   end
 
   def handle_call({:next_message, message}, _from, state) do
+    IO.inspect message
     IO.inspect state
     {message, new_state} = process_message(message.text, state) |> IO.inspect
 
