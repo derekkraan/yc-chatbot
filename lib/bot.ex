@@ -166,7 +166,7 @@ defmodule Game do
 
   def process_message("h", state), do: process_message("help", state)
   def process_message("help", state) do
-    {"Possible command are: `go to`, `open`, `where am i`, `look around`", state}
+    {"Possible command are: `open <door>`, `where am i`, `look around`, `pick up <item>`, `attack with <item>`, `run`", state}
   end
 
   def process_message("look around", state) do
@@ -190,8 +190,7 @@ defmodule Game do
     {current_room(state).text, state}
   end
 
-  def process_message("open " <> room, state), do: process_message("go to " <> room, state)
-  def process_message("go to " <> door, state) do
+  def process_message("open " <> door, state) do
     door = current_room(state) |> Room.door(door)
     if(door) do
       if(door |> Door.can_enter?(state.player)) do
