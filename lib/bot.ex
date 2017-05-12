@@ -82,6 +82,11 @@ defmodule Game do
     GenServer.call(pid, {:next_message, message})
   end
 
+  def process_message("h", state), do: process_message("help", state)
+  def process_message("help", state) do
+    {"Possible command are: 'go to', 'open'", state}
+  end
+
   def process_message("open " <> room, state), do: process_message("go to " <> room, state)
   def process_message("go to " <> room, state), do: goto_room(Rooms.room(room), state)
 
