@@ -50,16 +50,20 @@ end
 
 defmodule Player, do: defstruct [:room, :items]
 
-defmodule Room, do: defstruct [:text, :doors]
+defmodule Room, do: defstruct [:text, :doors, :name]
 
 defmodule Rooms do
-  @rooms %{
-    "room1" => %Room{text: "you are in room 1", doors: ["room2", "room3"]},
-    "room2" => %Room{text: "you are in room 2", doors: ["room1"]},
-    "room3" => %Room{text: "you are in room 3", doors: ["room1"]},
-  }
+  @rooms [
+    %Room{name: "room1", text: "you are in room 1", doors: ["room2", "room3"]},
+    %Room{name: "room2", text: "you are in room 2", doors: ["room1"]},
+    %Room{name: "room3", text: "you are in room 3", doors: ["room1"]},
+  ]
 
   def rooms, do: @rooms
+
+  def room(name) do
+    @rooms |> Enum.find(fn(room) -> room.name == name end)
+  end
 end
 
 defmodule Game do
@@ -67,7 +71,7 @@ defmodule Game do
 
   def start_link(user_id) do
     name = via_tuple(user_id)
-    GenServer.start_link(__MODULE__, %{player: %Player{room: :room1, items: []}}, name: name)
+    GenServer.start_link(__MODULE__, %{player: %Player{room: "room1", items: []}}, name: name)
   end
 
   defp via_tuple(user_id) do
@@ -80,11 +84,17 @@ defmodule Game do
 
   def process_message("open " <> room, state), do: process_message("go to " <> room, state)
   def process_message("go to " <> room, state) do
-    {Rooms.rooms[room].text, %{player: %Player{state.player | room: room}}}
+    next_room = Rooms.room(room)
+    current_room = Rooms.room(state.player.room)
+    if(current_room.doors |> Enum.member?(next_room.name)) do
+      {next_room.text, %{player: %Player{state.player | room: room}}}
+    else
+      {"You can't get to there from here", %{}}
+    end
   end
 
   def process_message(message, player) do
-    {"I'm sorry, I don't understand your query", %{}}
+    {"ENGLISH MOTHERFUCKER, DO YOU SPEAK IT??", %{}}
   end
 
   def handle_call({:next_message, message}, _from, state) do
