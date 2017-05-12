@@ -48,33 +48,53 @@ defmodule Bot do
   def handle_info(_, _, state), do: {:ok, state}
 end
 
-defmodule Player, do: defstruct [:room, :items]
+defmodule Player, do: defstruct [:room, :items, :health]
 
-defmodule Room, do: defstruct [:text, :doors, :name, :items]
+defmodule Enemy, do: defstruct [:name, :damage, :health]
 
-defmodule Door, do: defstruct [:room, :needs_key]
+defmodule Room, do: defstruct [:text, :doors, :name, :items, :enemy]
 
-defmodule Item, do: defstruct [:name, :damage]
+defmodule Door, do: defstruct [:name, :room, :needs_key]
+
+defmodule Item, do: defstruct [:name, :text, :damage]
 
 defmodule Rooms do
+  @enemies [
+    %Enemy{
+      name: "Ruben",
+      damage: 20,
+      health: 100
+    }
+  ]
+
   @rooms [
     %Room{
       name: "the parking lot",
       text: "You are on the parking lot of YoungCapital, the flags are moving in the wind. Looking at the building you see that there are two entrances, an orange door on the left with a big YoungCapital sign above it, and a glass door on right. Which door do you pick?",
       doors: [%Door{name: "A", room: "room2", needs_key: "key1"}, %Door{name: "B", room: "room3"}],
-      items: [%Item{name: "key1", text: "Keyfob", damage: 1}]
+      items: [%Item{name: "key1", text: "Keyfob", damage: 1}],
+      enemy: ""
     },
     %Room{
       name: "room2",
       text: "you are in room 2",
       doors: [%Door{name: "Y", room: "the parking lot"}],
       items: [],
+      enemy: "",
     },
     %Room{
       name: "room3",
       text: "you are in room 3",
-      doors: [%Door{name: "X", room: "the parking lot"}]
+      doors: [%Door{name: "X", room: "the parking lot"}],
       items: [],
+      enemy: ""
+    },
+    %Room{
+      name: "room4",
+      text: "you are in room 4",
+      doors: [],
+      items: [],
+      enemy: "Ruben"
     },
   ]
 
@@ -90,7 +110,7 @@ defmodule Game do
 
   def start_link(user_id) do
     name = via_tuple(user_id)
-    GenServer.start_link(__MODULE__, %{player: %Player{room: "the parking lot", items: []}}, name: name)
+    GenServer.start_link(__MODULE__, %{player: %Player{room: "the parking lot", items: [], health: 100}}, name: name)
   end
 
   defp via_tuple(user_id) do
