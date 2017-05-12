@@ -82,7 +82,8 @@ end
 defmodule Items do
   @items [
     %Item{name: "keyfob", text: "A keyfob. Maybe it opens something?", damage: 1},
-    %Item{name: "coffee", text: "Hot Coffee, handle with care", damage: 1}
+    %Item{name: "coffee", text: "Hot Coffee, handle with care", damage: 1},
+    %Item{name: "stapler", text: "A normal plastic stapler", damage: 5}
   ]
 
   def find(item_name), do: @items |> Enum.find(fn(item) -> item.name == item_name end)
@@ -124,7 +125,7 @@ defmodule Rooms do
       name: "main lobby",
       text: "You are now in the main lobby. You are greeted by the smell of fresh coffee and see the reception desk with a friendly receptionist in front of it. There is a coffee machine to the right. What do you do? `pick up coffee`, go through `green door` or `talk to receptionist`",
       doors: [%Door{name: "green door", room: "conference room"}],
-      items: ["coffee"],
+      items: ["coffee", "stapler"],
     },
     %Room{
       name: "glass lobby",
@@ -174,7 +175,7 @@ defmodule Game do
     {"Possible command are: 'go to', 'open', 'where am i'", state}
   end
 
-  def process_message("attack", %{enemy: %Enemy{}} = state) do
+  def process_message("attack with ", %{enemy: %Enemy{}} = state) do
     {"You have done no damage", state}
   end
 
@@ -215,12 +216,12 @@ defmodule Game do
   end
 
   def goto_room(nil, _), do: {"Unknown room", %{}}
+  def goto_room(%Room{enemy: nil} = next_room, state) do
+    {next_room.text, %Game{state | player: %Player{state.player | room: next_room.name}}}
+  end
   def goto_room(%Room{enemy: enemy_name} = next_room, state) do
     enemy = Enemies.enemy(enemy_name)
-    {"You see an enemy in the room, what do you do", %{enemy: enemy}}
-  end
-  def goto_room(next_room, state) do
-    {next_room.text, %Game{state | player: %Player{state.player | room: next_room.name}}}
+    {"You see an enemy in the room, what do you do", %Game{state | player: %Player{state.player | room: next_room.name}, enemy: enemy}}
   end
 
   def handle_call({:next_message, message}, _from, state) do
