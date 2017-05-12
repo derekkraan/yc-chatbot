@@ -48,13 +48,25 @@ defmodule Bot do
   def handle_info(_, _, state), do: {:ok, state}
 end
 
-defmodule Player, do: defstruct [:room, :items, :health]
-
 defmodule Enemy, do: defstruct [:name, :damage, :health]
 
-defmodule Room, do: defstruct [:text, :doors, :name, :items, :enemy]
+defmodule Player do
+  defstruct [:room, :items, :health]
 
-defmodule Door, do: defstruct [:name, :room, :needs_key]
+  def has_item?(_, _), do: false
+end
+
+defmodule Room do
+  defstruct [:text, :doors, :name, :items, :enemy]
+
+  def door(room, door_name), do: room.doors |> Enum.find(fn(door) -> door.name == door_name end)
+end
+
+defmodule Door do
+  defstruct [:name, :room, :needs_key]
+
+  def can_enter?(door, player), do: !door.needs_key || player |> Player.has_item?(door.needs_key)
+end
 
 defmodule Item, do: defstruct [:name, :text, :damage]
 
@@ -133,9 +145,14 @@ defmodule Game do
   end
 
   def process_message("open " <> room, state), do: process_message("go to " <> room, state)
-  def process_message("go to " <> room, state) do
-    if(current_room(state).doors |> Map.has_key?(room)) do
-      goto_room(Rooms.room(current_room(state).doors[room]), state)
+  def process_message("go to " <> door, state) do
+    door = current_room(state) |> Room.door(door)
+    if(door) do
+      if(door |> Door.can_enter?(state.player)) do
+        goto_room(Rooms.room(door.room), state)
+      else
+        {"This door needs #{door.needs_key} to open!", %{}}
+      end
     else
       {"You can't get to there from here", %{}}
     end
