@@ -83,11 +83,13 @@ defmodule Game do
   end
 
   def process_message("open " <> room, state), do: process_message("go to " <> room, state)
-  def process_message("go to " <> room, state) do
-    next_room = Rooms.room(room)
+  def process_message("go to " <> room, state), do: goto_room(Rooms.room(room), state)
+
+  def goto_room(nil, _), do: {"Unknown room", %{}}
+  def goto_room(next_room, state) do
     current_room = Rooms.room(state.player.room)
     if(current_room.doors |> Enum.member?(next_room.name)) do
-      {next_room.text, %{player: %Player{state.player | room: room}}}
+      {next_room.text, %{player: %Player{state.player | room: next_room.name}}}
     else
       {"You can't get to there from here", %{}}
     end
