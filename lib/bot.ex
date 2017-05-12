@@ -61,12 +61,6 @@ defmodule Room do
 
   def door(room, door_name), do: room.doors |> Enum.find(fn(door) -> door.name == door_name end)
   def has_item?(room, item_name), do: room.items |> Enum.find(fn(item) -> item == item_name end)
-
-  def text(room) do
-    "#{room.text}
-    You see a few things in the room: #{room.items |> Enum.map(fn(item) -> Item.find(item).name end) |> Enum.join(", ")}
-    There are a couple of doors: #{room.doors |> Enum.map(fn(door) -> door.text end)}"
-  end
 end
 
 defmodule Door do
@@ -172,7 +166,16 @@ defmodule Game do
 
   def process_message("h", state), do: process_message("help", state)
   def process_message("help", state) do
-    {"Possible command are: 'go to', 'open', 'where am i'", state}
+    {"Possible command are: `go to`, `open`, `where am i`, `look around`", state}
+  end
+
+  def process_message("look around", state) do
+    items = current_room(state).items |> Enum.map(&Items.find/1)
+    case length(items) do
+      0 -> {"You don't see anything", state}
+      1 -> {"You see something: #{items |> Enum.map(fn(item) -> "#{item.text}" end) |> Enum.join("\n")}", state}
+      _ -> {"You see a few things lying around:\n#{items |> Enum.map(fn(item) -> "  #{item.text}" end) |> Enum.join("\n")}", state}
+    end
   end
 
   def process_message("attack with ", %{enemy: %Enemy{}} = state) do
