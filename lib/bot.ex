@@ -243,7 +243,7 @@ defmodule Game do
   end
   def goto_room(%Room{enemy: enemy_name} = next_room, state) do
     enemy = Enemies.enemy(enemy_name)
-    {"You see #{enemy.name} in the room. It blocks you form entering the room. What do you do `run` or `fight`", %Game{state | player: %Player{state.player | room: next_room.name}, enemy: enemy}}
+    {"You see #{enemy.name} in the room. It blocks you from entering the room. What do you do `run` or `fight`", %Game{state | player: %Player{state.player | room: next_room.name}, enemy: enemy}}
   end
 
   def handle_call({:next_message, message}, _from, state) do
