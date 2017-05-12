@@ -61,6 +61,12 @@ defmodule Room do
 
   def door(room, door_name), do: room.doors |> Enum.find(fn(door) -> door.name == door_name end)
   def has_item?(room, item_name), do: room.items |> Enum.find(fn(item) -> item == item_name end)
+
+  def text(room) do
+    "#{room.text}
+    You see a few things in the room: #{room.items |> Enum.map(fn(item) -> Item.find(item).name end) |> Enum.join(", ")}
+    There are a couple of doors: #{room.doors |> Enum.map(fn(door) -> door.text end)}"
+  end
 end
 
 defmodule Door do
@@ -184,7 +190,7 @@ defmodule Game do
     room = current_room(state)
     item = Items.find(item_name)
     if(room |> Room.has_item?(item_name)) do
-      {"You picked up #{item.name}. #{item.text}", %Game{state | player: %Player{state.player | items: state.player.items ++ [item]}}}
+      {"You picked up #{item.name}. #{item.text}", %Game{state | player: %Player{state.player | items: state.player.items ++ [item.name]}}}
     else
       {"What? Are you going crazy?", state}
     end
