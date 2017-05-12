@@ -101,7 +101,7 @@ defmodule Rooms do
       name: "the parking lot",
       text: "You are on the parking lot of YoungCapital, the flags are moving in the wind. Looking at the building you see that there are two entrances, an `orange door` on the left with a big YoungCapital sign above it, and a `glass door` on right. Which door do you pick?",
       doors: [
-        %Door{name: "glass door", room: "glass lobby", needs_key: "key1"},
+        %Door{name: "glass door", room: "glass lobby", needs_key: "keyfob"},
         %Door{name: "orange door", room: "main lobby"}
         ],
       items: ["keyfob"],
