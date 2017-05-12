@@ -77,7 +77,7 @@ defmodule Items do
   @items [
     %Item{name: "keyfob", text: "A keyfob. Maybe it opens something?", damage: 1},
     %Item{name: "coffee", text: "Hot Coffee, handle with care", damage: 1},
-    %Item{name: "stapler", text: "A normal plastic stapler", damage: 5}
+    %Item{name: "stapler", text: "A normal plastic stapler", damage: 35}
   ]
 
   def find(item_name), do: @items |> Enum.find(fn(item) -> item.name == item_name end)
@@ -163,10 +163,35 @@ defmodule Game do
   end
 
   def current_room(state), do: Rooms.room(state.player.room)
+  def owned_items(state), do: state.player.items
 
   def process_message("h", state), do: process_message("help", state)
   def process_message("help", state) do
     {"Possible command are: `open <door>`, `where am i`, `look around`, `pick up <item>`, `attack with <item>`, `run`", state}
+  end
+
+  def process_message("fight", %{enemy: %Enemy{}} = state) do
+    items = owned_items(state)
+    case length(items) do
+      0 -> {"You don't have any items to attack", state}
+      _ -> {"What do you want to attack with (attack with `item_name`):  #{items |> Enum.map(fn(item) -> "#{item}" end) |> Enum.join("\n")}", state}
+    end
+  end
+
+  def process_message("attack with " <> item_name, %{enemy: %Enemy{}} = state) do
+    item = Items.find(item_name)
+    enemy = state.enemy
+    new_health = enemy.health - item.damage
+
+    if new_health > 0 do
+      {"You have done #{item.damage} damage, but #{enemy.name} is still not defeated", %Game{state | enemy: %Enemy{enemy | health: new_health}}}
+    else
+      {"You have defeated #{enemy.name}", %Game{state | enemy: nil}}
+    end
+  end
+
+  def process_message("run", %{enemy: %Enemy{}} = state) do
+    goto_room(Rooms.room("the parking lot"), %Game{state | enemy: nil})
   end
 
   def process_message("look around", state) do
@@ -178,14 +203,9 @@ defmodule Game do
     end
   end
 
-  def process_message("attack with ", %{enemy: %Enemy{}} = state) do
-    {"You have done no damage", state}
+  def process_message("where am i", %{enemy: %Enemy{}} = state) do
+    {"You're in front of your mortal enemy #{state.enemy.name}", state}
   end
-
-  def process_message("run", %{enemy: %Enemy{}} = state) do
-    goto_room(Rooms.room("the parking lot"), %Game{state | enemy: nil})
-  end
-
   def process_message("where am i", state) do
     {current_room(state).text, state}
   end
@@ -223,7 +243,7 @@ defmodule Game do
   end
   def goto_room(%Room{enemy: enemy_name} = next_room, state) do
     enemy = Enemies.enemy(enemy_name)
-    {"You see an enemy in the room, what do you do", %Game{state | player: %Player{state.player | room: next_room.name}, enemy: enemy}}
+    {"You see #{enemy.name} in the room. It blocks you form entering the room. What do you do `run` or `fight`", %Game{state | player: %Player{state.player | room: next_room.name}, enemy: enemy}}
   end
 
   def handle_call({:next_message, message}, _from, state) do
