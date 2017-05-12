@@ -122,14 +122,21 @@ defmodule Rooms do
     },
     %Room{
       name: "main lobby",
-      text: "You are now in the main lobby. You are greeted by the smell of fresh coffee and see the reception desk with a friendly receptionist in front of it. There is a coffee machine to the right. What do you do? `pick up coffee` or `talk to receptionist`",
-      doors: [%Door{name: "Y", room: "the parking lot"}],
+      text: "You are now in the main lobby. You are greeted by the smell of fresh coffee and see the reception desk with a friendly receptionist in front of it. There is a coffee machine to the right. What do you do? `pick up coffee`, go through `green door` or `talk to receptionist`",
+      doors: [%Door{name: "green door", room: "conference room"}],
       items: ["coffee"],
     },
     %Room{
       name: "glass lobby",
       text: "You are now in the glass lobby. Oh no!, You see enemy *Jaap*. Do you want to `fight` or `run`?",
       doors: [%Door{name: "X", room: "the parking lot"}],
+      items: [],
+      enemy: "Jaap"
+    },
+    %Room{
+      name: "conference room",
+      text: "You are in the conference room. Oh oh! Your mortal enemy *Ruben* is here! What do you want to do? `fight` or `run`",
+      doors: [],
       items: [],
       enemy: "Ruben"
     },
