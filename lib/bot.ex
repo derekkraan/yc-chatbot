@@ -77,30 +77,35 @@ defmodule Rooms do
       name: "Ruben",
       damage: 20,
       health: 100
+    },
+    %Enemy{
+      name: "Jaap",
+      damage: 30,
+      health: 100
     }
   ]
 
   @rooms [
     %Room{
       name: "the parking lot",
-      text: "You are on the parking lot of YoungCapital, the flags are moving in the wind. Looking at the building you see that there are two entrances, an `orange door` on the left with a big YoungCapital sign above it, and `a glass` door on right. Which door do you pick?",
+      text: "You are on the parking lot of YoungCapital, the flags are moving in the wind. Looking at the building you see that there are two entrances, an `orange door` on the left with a big YoungCapital sign above it, and a `glass door` on right. Which door do you pick?",
       doors: [
-        %Door{name: "A", room: "room2", needs_key: "key1"},
-        %Door{name: "B", room: "room3"}
-      ],
+        %Door{name: "glass door", room: "glass lobby", needs_key: "key1"},
+        %Door{name: "orange door", room: "main lobby"}
+        ],
       items: [%Item{name: "key1", text: "Keyfob", damage: 1}],
       enemy: ""
     },
     %Room{
-      name: "room2",
-      text: "you are in room 2",
+      name: "main lobby",
+      text: "You are now in the main lobby. You are greeted by the smell of fresh coffee and see the reception desk with a friendly receptionist in front of it. There is a coffee machine to the right. What do you do? `pick up coffee` or `talk to receptionist`",
       doors: [%Door{name: "Y", room: "the parking lot"}],
-      items: [],
+      items: [%Item{name: "coffee", text: "Hot Coffee, handle with care", damage: 1}],
       enemy: "",
     },
     %Room{
-      name: "room3",
-      text: "you are in room 3",
+      name: "glass lobby",
+      text: "You are now in the glass lobby. You see enemy *Jaap*. Do you want to `fight` or `run`?",
       doors: [%Door{name: "X", room: "the parking lot"}],
       items: [],
       enemy: ""
