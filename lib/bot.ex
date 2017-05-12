@@ -53,13 +53,14 @@ defmodule Enemy, do: defstruct [:name, :damage, :health]
 defmodule Player do
   defstruct [:room, :items, :health]
 
-  def has_item?(_, _), do: false
+  def has_item?(player, item_name), do: player.items |> Enum.find(fn(item) -> item.name == item_name end)
 end
 
 defmodule Room do
   defstruct [:text, :doors, :name, :items, :enemy]
 
   def door(room, door_name), do: room.doors |> Enum.find(fn(door) -> door.name == door_name end)
+  def has_item?(room, item_name), do: room.items |> Enum.find(fn(item) -> item.name == item_name end)
 end
 
 defmodule Door do
@@ -123,9 +124,11 @@ end
 defmodule Game do
   use GenServer
 
+  defstruct [:player, :enemy]
+
   def start_link(user_id) do
     name = via_tuple(user_id)
-    GenServer.start_link(__MODULE__, %{player: %Player{room: "the parking lot", items: [], health: 100}}, name: name)
+    GenServer.start_link(__MODULE__, %Game{player: %Player{room: "the parking lot", items: [], health: 100}}, name: name)
   end
 
   defp via_tuple(user_id) do
@@ -140,11 +143,11 @@ defmodule Game do
 
   def process_message("h", state), do: process_message("help", state)
   def process_message("help", state) do
-    {"Possible command are: 'go to', 'open', 'where am i'", %{}}
+    {"Possible command are: 'go to', 'open', 'where am i'", state}
   end
 
   def process_message("where am i", state) do
-    {current_room(state).text, %{}}
+    {current_room(state).text, state}
   end
 
   def process_message("open " <> room, state), do: process_message("go to " <> room, state)
@@ -154,20 +157,26 @@ defmodule Game do
       if(door |> Door.can_enter?(state.player)) do
         goto_room(Rooms.room(door.room), state)
       else
-        {"This door needs #{door.needs_key} to open!", %{}}
+        {"This door needs #{door.needs_key} to open!", state}
       end
     else
-      {"You can't get to there from here", %{}}
+      {"You can't get to there from here", state}
     end
+  end
+
+  def process_message("pick up " <> item, state) do
+    room = current_room(state)
+    if(room |> Room.has_item?(item)) do
+    end
+  end
+
+  def process_message(message, state) do
+    {Rooms.room(state.player.room).text, state}
   end
 
   def goto_room(nil, _), do: {"Unknown room", %{}}
   def goto_room(next_room, state) do
-    {next_room.text, %{player: %Player{state.player | room: next_room.name}}}
-  end
-
-  def process_message(message, state) do
-    {Rooms.room(state.player.room).text, %{}}
+    {next_room.text, %Game{state | player: %Player{state.player | room: next_room.name}}}
   end
 
   def handle_call({:next_message, message}, _from, state) do
@@ -175,6 +184,6 @@ defmodule Game do
     IO.inspect state
     {message, new_state} = process_message(message.text, state) |> IO.inspect
 
-    {:reply, message, state |> Map.merge(new_state)}
+    {:reply, message, new_state}
   end
 end
