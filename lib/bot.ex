@@ -60,7 +60,7 @@ defmodule Room do
   defstruct [:text, :doors, :name, :items, :enemy]
 
   def door(room, door_name), do: room.doors |> Enum.find(fn(door) -> door.name == door_name end)
-  def has_item?(room, item_name), do: room.items |> Enum.find(fn(item) -> item.name == item_name end)
+  def has_item?(room, item_name), do: room.items |> Enum.find(fn(item) -> item == item_name end)
 end
 
 defmodule Door do
@@ -69,7 +69,18 @@ defmodule Door do
   def can_enter?(door, player), do: !door.needs_key || player |> Player.has_item?(door.needs_key)
 end
 
-defmodule Item, do: defstruct [:name, :text, :damage]
+defmodule Item do
+  defstruct [:name, :text, :damage]
+end
+
+defmodule Items do
+  @items [
+    %Item{name: "keyfob", text: "A keyfob. Maybe it opens something?", damage: 1},
+    %Item{name: "coffee", text: "Hot Coffee, handle with care", damage: 1}
+  ]
+
+  def find(item_name), do: @items |> Enum.find(fn(item) -> item.name == item_name end)
+end
 
 defmodule Rooms do
   @enemies [
@@ -93,14 +104,14 @@ defmodule Rooms do
         %Door{name: "glass door", room: "glass lobby", needs_key: "key1"},
         %Door{name: "orange door", room: "main lobby"}
         ],
-      items: [%Item{name: "key1", text: "Keyfob", damage: 1}],
+      items: ["keyfob"],
       enemy: ""
     },
     %Room{
       name: "main lobby",
       text: "You are now in the main lobby. You are greeted by the smell of fresh coffee and see the reception desk with a friendly receptionist in front of it. There is a coffee machine to the right. What do you do? `pick up coffee` or `talk to receptionist`",
       doors: [%Door{name: "Y", room: "the parking lot"}],
-      items: [%Item{name: "coffee", text: "Hot Coffee, handle with care", damage: 1}],
+      items: ["coffee"],
       enemy: "",
     },
     %Room{
@@ -169,10 +180,13 @@ defmodule Game do
     end
   end
 
-  def process_message("pick up " <> item, state) do
+  def process_message("pick up " <> item_name, state) do
     room = current_room(state)
-    if(room |> Room.has_item?(item)) do
-      {"You picked up #{item}", %Game{state | player: %Player{state.player | items: state.player.items ++ [item]}}}
+    item = Items.find(item_name)
+    if(room |> Room.has_item?(item_name)) do
+      {"You picked up #{item.name}. #{item.text}", %Game{state | player: %Player{state.player | items: state.player.items ++ [item]}}}
+    else
+      {"What? Are you going crazy?", state}
     end
   end
 
